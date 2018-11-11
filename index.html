@@ -1,0 +1,173 @@
+<html>
+<style>
+    @font-face {
+        font-family: 'Digital-7';
+        src: url('./digital_7/digital-7 (mono).ttf')
+    }
+    body {
+        background-color: black
+    }
+    #container {
+        color: red;
+        font-family: 'Digital-7';
+        font-size: 600px;
+        margin: auto; 
+        text-align: center; 
+        display: block;
+        position: absolute;
+        height: 600px;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+</style>
+<head>
+    <script>
+        const READY_STATE = 0;
+        const STARTED_STATE = 1;
+        var state = READY_STATE;
+
+        var maxRealTime, maxDisplayTime, ratio,
+            minutes, seconds,
+            timer,  interval,
+            deltaSpeed, speedIndex;
+
+        function start() {
+            switch (state) {
+                case READY_STATE:
+
+                    // initialize variables
+                    clearInterval(timer);
+                    maxRealTime = 2.56;
+                    maxDisplayTime = 4.00;
+                    ratio = maxRealTime / maxDisplayTime;
+                    interval = ratio * 1000;
+                    deltaSpeed = interval * .1;
+                    speedIndex = 0;
+                    minutes = 4;
+                    seconds = 0;
+
+                    // reset color to red
+                    var elem = document.getElementById('container');
+                    elem.innerHTML = "";
+                    elem.style.color = "red";
+                    
+                    // output to console for debugging purposes
+                    console.log("maxRealTime = " + maxRealTime);
+                    console.log("maxDisplayTime = " + maxDisplayTime);
+                    console.log("ratio = " + ratio);
+                    console.log("interval = " + interval);
+
+                    // start the timer
+                    state = STARTED_STATE;
+                    timer = setInterval(function () {
+                        tick();
+                    }, interval);
+                    break;
+
+                default:
+                    console.log("Invalid action 'start' for state " + state);
+            }
+        }
+
+        function tick() {
+            switch (state) {
+                case STARTED_STATE:
+                
+                    // handle rolling the nubers over 
+                    seconds--;
+                    if (seconds < 0) {
+                        seconds = 59;
+                        minutes--;
+                        if (minutes < 0) {
+                            seconds = 0;
+                            minutes = 0;
+                        }
+                    }
+
+                    // format the text
+                    var minuteText = trimRight('0' + minutes, 1)
+                    var secondText = trimRight('00' + seconds, 2)
+                    var text = minuteText + ':' + secondText
+
+                    // update the display
+                    var elem = document.getElementById('container');
+                    elem.innerHTML = text;
+
+                    // determine when to stop
+                    if (minutes <= 0 && seconds <= 1) {
+                        elem.style.color = "green";
+                        clearInterval(timer);
+                        state = READY_STATE;
+                    }
+                    break;
+
+                default:
+                    console.log("Invalid action 'tick' for state " + state);
+            }
+        }
+
+        function increaseSpeed() {
+            switch (state) {
+
+                case READY_STATE:
+                    start();
+                    break;
+
+                case STARTED_STATE:
+                    if (speedIndex < 6) {
+                        clearInterval(timer);
+                        interval -= deltaSpeed;
+                        speedIndex++;
+                        timer = setInterval(function () {
+                            tick();
+                        }, interval);
+                    }
+                    break;
+
+                default:
+                    console.log("Invalid action 'increaseSpeed' for state " + state);
+            }
+        }
+
+        function decreaseSpeed() {
+            switch (state) {
+
+                case STARTED_STATE:
+                    if (speedIndex > -10) {
+                        clearInterval(timer);
+                        interval += deltaSpeed;
+                        speedIndex--;
+                        timer = setInterval(function () {
+                            tick();
+                        }, interval);
+                    }
+                    break; 
+
+                default:
+                    onsole.log("Invalid action 'decreaseSpeed' for state " + state);
+            }
+        }
+
+        function onBodyClick() {
+            start();
+        }
+
+        function onKeyDown(event) {
+            var k = event.which || event.keyCode;
+            if (k == 34) { increaseSpeed(); } // pagedown
+            if (k == 33) { decreaseSpeed(); } // pageup
+        }
+
+        function trimRight(value, length) {
+            return value.substr(value.length - length, length);
+        };
+
+    </script>
+</head>
+<body onclick="onBodyClick()" onkeydown="onKeyDown(event)">
+    <div id="container">
+    </div>
+</body>
+</html>
